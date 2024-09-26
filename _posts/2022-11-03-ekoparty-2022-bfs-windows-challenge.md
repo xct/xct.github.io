@@ -161,7 +161,7 @@ bfs_eko2022+0x146e:
 00000000`005eeb60  45454545 41414141 41414141 41414141
 ```
 
-At this point, we have to do some digging on how `iret` works to see if we can craft the stack in a way that would let us gain (custom-) code execution. The `iret` instruction is used to return control from an exception or interrupt handler and is expecting the following values on the stack (very good [article](http://jamesmolloy.co.uk/tutorial_html/10.-User%20Mode.html) on this topic):
+At this point, we have to do some digging on how `iret` works to see if we can craft the stack in a way that would let us gain (custom-) code execution. The `iret` instruction is used to return control from an exception or interrupt handler and is expecting the following values on the stack (very good [article](https://jamesmolloy.co.uk/tutorial_html/10.-User%20Mode.html) on this topic):
 
 ```
 - new instruction pointer

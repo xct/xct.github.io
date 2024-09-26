@@ -39,7 +39,7 @@ $1$pdQG$o8nrSzsGXeaduXrjlvKc91 : stealth1agent
 02375012182C1A1D751618034F36415408 : Q4)sJu\Y8qz*A3?d
 ```
 
-We used this [website](http://www.firewall.cx/cisco-technical-knowledgebase/cisco-routers/358-cisco-type7-password-crack.html) to decrypt the config passwords because they are not really sensitive and use john for the crypt passsword.
+We used this [website](https://www.firewall.cx/cisco-technical-knowledgebase/cisco-routers/358-cisco-type7-password-crack.html) to decrypt the config passwords because they are not really sensitive and use john for the crypt passsword.
 
 We can use `hazard:stealth1agent` to connect to msrpc and enumerate the other local users on the box:
 

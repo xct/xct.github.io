@@ -8,7 +8,7 @@ tags:
 title: Dynamic Binary Instrumentation with DynamoRIO
 ---
 
-DynamoRIO (<http://dynamorio.org/>) is a dynamic binary instrumentation framework that allows to manipulate binary code at runtime. The framework can be used to build various tools for program analysis, profiling, optimization and many more on top of it.
+DynamoRIO (<https://dynamorio.org/>) is a dynamic binary instrumentation framework that allows to manipulate binary code at runtime. The framework can be used to build various tools for program analysis, profiling, optimization and many more on top of it.
 
 The basic principle of DynamoRIO is to put all code that is to be executed into a code cache, while allowing the user to manipulate the contents of said code cache. To do so one needs to write a *client*. Clients are pieces of software that use the DynamoRIO API to achieve various goals. To interact with clients DynamoRIO exposes a series of events to which one can register to. For example the *dr\_register\_bb\_event* gets called every time a basic block is put into the code cache. This happens just once per basic block regardless of the number of execution of that block.
 
@@ -53,4 +53,4 @@ static void event_exit(void) {
 }
 ```
 
-With these few functions we can get an accurate trace of a target binary. There are more examples in the excellent DynamoRIO documentation at [http://dynamorio.org/docs/API\_samples.html](http://dynamorio.org/docs/API_samples.html).
+With these few functions we can get an accurate trace of a target binary. There are more examples in the excellent DynamoRIO documentation at [https://dynamorio.org/docs/API\_samples.html](https://dynamorio.org/docs/API_samples.html).

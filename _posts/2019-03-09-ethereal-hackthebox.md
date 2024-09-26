@@ -146,7 +146,7 @@ D:\Certs>dir
                2 Dir(s)   8,437,514,240 bytes free
 ```
 
-To create the actual payload we use [wix](http://wixtoolset.org/). To begin we need to create a xml file that describes our installer:
+To create the actual payload we use [wix](https://wixtoolset.org/). To begin we need to create a xml file that describes our installer:
 
 ```
 <?xml version="1.0"?>

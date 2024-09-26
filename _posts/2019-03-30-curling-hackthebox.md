@@ -23,7 +23,7 @@ Curling2018!
 
 There are some posts on the website that have "Floris" as author, so we try to log into the application as "Floris:Curling2018!" which succeeds. Since we want to get to admin panel we log into "/administrator" and get to the joomla backend.
 
-We can execute php code by editing the currently active templates "error.php". In order got get a shell we replace its contents with a [php reverse shell](http://pentestmonkey.net/tools/web-shells/php-reverse-shell) and get a connection back.
+We can execute php code by editing the currently active templates "error.php". In order got get a shell we replace its contents with a [php reverse shell](https://pentestmonkey.net/tools/web-shells/php-reverse-shell) and get a connection back.
 
 In the home folder of Floris we find a password backup file called "password\_backup", which we download via nc to our box and analyze. It seems to be the output of the tool "xxd" on some binary file:
 
