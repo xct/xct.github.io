@@ -4,6 +4,10 @@ icon: fas fa-tools
 order: 4
 ---
 
+## Labs
+
+- <https://vulnlab.com>
+
 ## Shelf
 
 - <https://github.com/xct/winssh>
