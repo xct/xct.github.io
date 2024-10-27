@@ -8,6 +8,7 @@ media_subpath: /assets/posts/2024-09-29-vl-cicada
 tags:
 - active directory
 - kerberos
+- relaying
 title: VL Cicada
 ---
 
@@ -71,6 +72,8 @@ drwxrwxrwx 2 nobody nogroup 4,0K Sep 15 15:18 ..
 drwx------ 2 nobody nogroup   64 Sep 15 15:25 Documents
 -rwx------ 1 nobody nogroup 1,8M Sep 13 18:09 marketing.png
 ```
+
+## Exploitation
 
 After downloading the images, we find one is of an employee that has a note with a password on their desk. We try to authenticate with the credentials:
 
