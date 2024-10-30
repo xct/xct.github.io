@@ -122,7 +122,7 @@ esp=0170eab0
 0170f298  41 41 41 41 41 41 41 41-41 41 41 41 41 41 41 41  AAAAAAAAAAAAAAAA
 ```
 
-We find the start of our As is 3 times in memory. The last one looks like the most promising one because it’s somewhat close to our stack pointer:
+We find the start of our As multiple times in memory. The last one looks like the most promising one because it’s somewhat close to our stack pointer:
 
 ```
 0:001> ? 0170f298 - 0170eab0
@@ -926,5 +926,3 @@ I had a lot of success with [ropper ](https://github.com/sashs/Ropper)and its in
 
 - [Offensive Security EXP-301](https://www.offensive-security.com/exp301-osed/#xct)
 - <https://connormcgarr.github.io/ROP2/>
-
-*This binary was used for a vulnerable machine on the vulndev discord server that is available for [patreon ](https://www.patreon.com/xct)subscribers.*
