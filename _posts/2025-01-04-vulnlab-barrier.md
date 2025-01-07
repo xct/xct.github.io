@@ -119,7 +119,7 @@ Host: gitlab.barrier.vl
 ...
 ```
 
-We copy the SAML and decode it like [this](https://gchq.github.io/CyberChef/#recipe=URL%5FDecode%28%29From%5FBase64%28%27A%2DZa%2Dz0%2D9%252B%2F%253D%27%2Ctrue%2Cfalse%29Raw%5FInflate%280%2C0%2C%27Adaptive%27%2Cfalse%2Cfalse).
+We copy the SAML and decode it like [this](https://gchq.github.io/CyberChef/#recipe=URL_Decode()From_Base64('A-Za-z0-9%252B/%253D',true,false)Raw_Inflate(0,0,'Adaptive',false,false)).
 
 Then we save the result into "response.xml" and run the script to change the user to "akadmin" as follows:
 
