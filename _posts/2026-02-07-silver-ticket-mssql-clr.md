@@ -1,5 +1,5 @@
 ---
-title: "Silver Tickets and MSSQL: Privesc Without SeImpersonatePrivilege"
+title: "MSSQL Silver Tickets and Token Privileges"
 categories:
 - Misc
 image:
