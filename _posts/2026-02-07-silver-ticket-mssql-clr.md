@@ -99,7 +99,7 @@ The handle from `WindowsIdentity.Token` is managed by the .NET runtime and does 
 
 ## The Working Approach
 
-The trick is to go through `.Impersonate()` first. `WindowsIdentity.Impersonate()` internally calls the Win32 API to set the caller's identity as the thread impersonation token. Once the thread is impersonating, we can call `OpenThreadToken` to get a handle with proper access rights:
+What ended up working was to call `.Impersonate()` first. `WindowsIdentity.Impersonate()` internally calls the Win32 API to set the caller's identity as the thread impersonation token. Once the thread is impersonating, we can call `OpenThreadToken` to get a handle with proper access rights:
 
 1. `SqlContext.WindowsIdentity` - get the caller's identity
 2. `.Impersonate()` - sets the thread impersonation token
@@ -107,7 +107,7 @@ The trick is to go through `.Impersonate()` first. `WindowsIdentity.Impersonate(
 4. `DuplicateTokenEx` - convert to primary token
 5. `.Undo()` - revert managed impersonation immediately
 
-At this point we have a usable primary token with all the forged PAC privileges. We can't call `CreateProcessAsUser` with it directly - that API requires `SeAssignPrimaryTokenPrivilege`, which is only assigned to SYSTEM, NETWORK SERVICE and LOCAL SERVICE via local security policy - not to Domain Admins.
+At this point we have a usable primary token with all the forged PAC privileges. We can't call `CreateProcessAsUser` with it directly - that API requires `SeAssignPrimaryTokenPrivilege`, which we don't have.
 
 Instead, we use parent PID spoofing. The silver ticket token has `SeDebugPrivilege` from the forged admin group membership, which lets us open any process regardless of its security descriptor. We open a SYSTEM process and use it as the parent for `CreateProcess` - the child inherits the parent's primary token:
 
@@ -116,7 +116,7 @@ Instead, we use parent PID spoofing. The silver ticket token has `SeDebugPrivile
 8. `RevertToSelf()` - done with impersonation, keep the process handle
 9. `CreateProcess` with `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS` = DcomLaunch handle - child inherits SYSTEM token
 
-When `CreateProcess` is called with an explicit parent via `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS`, the kernel creates the child process with a token inherited from the designated parent - not the caller. This bypasses the `SeAssignPrimaryTokenPrivilege` requirement entirely since no explicit token assignment occurs.
+When `CreateProcess` is called with an explicit parent via `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS`, the kernel creates the child process with a token inherited from the designated parent - not the caller. This bypasses the `SeAssignPrimaryTokenPrivilege` requirement since no explicit token assignment occurs.
 
 There are two important CLR hosting constraints to be aware of: SQL Server's CLR host tracks managed impersonation (`WindowsImpersonationContext`) and will abort execution if it's held too long. The `.Undo()` in step 5 must happen promptly. For the `OpenProcess` call (step 6-7), we use the native `ImpersonateLoggedOnUser`/`RevertToSelf` APIs instead, which the CLR host does not monitor.
 
