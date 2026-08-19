@@ -10,3 +10,18 @@
 
 /* append your custom style below */
 
+/* Framed build photos (scoped via the .framed class on <img>) */
+.content img.framed {
+  padding: 0.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--main-border-color);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 22%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgb(0 0 0 / 30%);
+  }
+}
+
