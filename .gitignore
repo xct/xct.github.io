@@ -26,5 +26,3 @@ package-lock.json
 _sass/dist
 assets/js/dist
 
-migrate.py
-migrate2.py
