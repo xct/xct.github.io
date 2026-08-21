@@ -20,9 +20,9 @@ I was looking for a good way to run local AI for vulnerability research and a wh
 - [DeepSeek V4 Flash 0731](https://www.lucebox.com/blog/deepseek-v4-flash-0731)
 - [DeepSeek V4 Asymmetric Parallelism](https://www.lucebox.com/blog/deepseek-v4-asymmetric-parallelism)
 
-They didn't just attach the GPU and use it separately but found a way to meaningfully combine the iGPU and the GPU, so ultimately 160GB VRAM can be used. Their approach puts the most-frequently-routed experts on the R9700's fast 32GB while the Strix Halo holds the rest in its 128GB pool. For a sparse MoE model like DeepSeek V4 Flash 0731, where only a few experts fire per token, that split seems to map well onto the hardware.
+They didn't only attach the GPU to use it separately but found a way to combine the iGPU and the GPU, so in theory 160GB VRAM could be used. Their approach puts the most-frequently-routed experts on the R9700's fast 32GB while the Strix Halo holds the rest in its 128GB pool. For a sparse MoE model like DeepSeek V4 Flash 0731, where only a few experts fire per token, that split seems to map well onto the hardware.
 
-So I thought it was worth a try and bought:
+I thought it was worth a try and bought:
 
 - [Minisforum DEG1](https://www.minisforum.jp/products/minisforum-deg1-egpu-dock) - basically acts as the mainboard for the GPU and has an OCuLink port
 - Corsair SF850 - the GPU needs its own PSU
@@ -85,8 +85,10 @@ $ lspci -vv -s c6:00.0 | grep -E "LnkCap|LnkSta"
   LnkSta: Speed 16GT/s (downgraded), Width x4 (downgraded)
 ```
 
-For LLM inference this probably does not matter much because once the weights are in VRAM, the PCIe link mostly carries prompts and results. It could hurt for anything that streams data across the bus constantly, like offloading layers between the R9700 and host memory.
+Will have to see how much that matters in practice after playing with it for a bit.
 
 ## First Impressions
 
-Using Vulkan and MTP we get about 50-80 t/s for Qwen 3.8 27B (Q4_K_XL weights with Q8 KV cache) on the R9700, depending on how well the prediction does and the context size - way better than the Strix Halo alone could do. Next I want to try DeepSeek V4 Flash 0731 (and other MoEs), similar to what Lucebox did, so both the iGPU and GPU are used together, and do some actual vulnerability research with both Qwen and DeepSeek offline. Let's see if it can pay for itself.
+Using Vulkan and MTP we get about 50-80 t/s for Qwen 3.8 27B (Q4_K_XL weights with Q8 KV cache) on the R9700, depending on how well the prediction does and the context size - way better than the Strix Halo could do. Next I want to try DeepSeek V4 Flash 0731 (and other MoEs), similar to what Lucebox did, so both the iGPU and GPU are used together, and do some actual vulnerability research with both Qwen and DeepSeek offline. Let's see if it can pay for itself.
+
+One thing I'm not quite happy with yet is the noise so I reduced power on the GPU from 300W to 250W (about 8% slower) and will try to find a proper case to put it into. 
