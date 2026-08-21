@@ -91,4 +91,16 @@ Will have to see how much that matters in practice after playing with it for a b
 
 Using Vulkan and MTP we get about 50-80 t/s for Qwen 3.8 27B (Q4_K_XL weights with Q8 KV cache) on the R9700, depending on how well the prediction does and the context size - way better than the Strix Halo could do. Next I want to try DeepSeek V4 Flash 0731 (and other MoEs), similar to what Lucebox did, so both the iGPU and GPU are used together, and do some actual vulnerability research with both Qwen and DeepSeek offline. Let's see if it can pay for itself.
 
-One thing I'm not quite happy with yet is the noise so I reduced power on the GPU from 300W to 250W (about 8% slower) and will try to find a proper case to put it into. 
+One thing I'm not quite happy with yet is the noise so I reduced power on the GPU from 300W to 250W (about 8% slower) and will try to find a proper case to put it into.
+
+## Update
+
+I moved the whole thing into a Lian Li B4 - and it fits, though it's millimeter work to get everything in there:
+
+![The mini PC, DEG1 dock, R9700 and SFX PSU all packed inside the open Lian Li B4](b4-inside.jpg){: .framed}
+_Mini PC, DEG1, R9700 and the SF850 all squeezed into the B4._
+
+![The closed Lian Li B4 with its walnut slat front panel](b4-closed.jpg){: .framed}
+_Closed up it just looks like a normal small PC._ 
+
+Just need to add some more case fans and a fan controller for proper cooling.
