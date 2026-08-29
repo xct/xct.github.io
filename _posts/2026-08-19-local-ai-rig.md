@@ -104,3 +104,32 @@ _Mini PC, DEG1, R9700 and the SF850 all squeezed into the B4._
 _Closed up it just looks like a normal small PC._ 
 
 Just need to add some more case fans and a fan controller for proper cooling.
+
+Unfortunately, the M.2 PCIe x4 OCuLink adapter did not work reliably at Gen4 speeds, and the card eventually crashed or dropped off the PCIe bus. I ordered another one, and luckily the issue was gone. It was a bit more expensive, though, because it has a signal driver that helps reinforce the PCIe signal.
+
+Some numbers:
+
+**Qwen3.8-Flash-Next (125B-A6B MoE, unsloth UD-Q4_K_XL, ~104GB) on the Strix Halo iGPU.** measured decode at 262k context window, Q8 KV cache:
+
+| context depth | decode t/s |
+|---|---|
+| empty | 29-34 |
+| 25k | 30 |
+| 107k | 29 |
+| 217k | 23 |
+
+Prefill is 170-390 t/s depending on depth, and draft acceptance stays around 0.8 even at 217k. This works pretty well for everyday work.
+
+**Qwen 3.8 27B (dense, UD-Q4_K_XL) on the R9700.** Around 45-50 t/s on code, with MTP draft acceptance about 0.73. Plain decode without speculation is 28 t/s, which is roughly what the card's 640 GB/s predicts.
+
+**What didn't work: combining both GPUs for one model.** I tested every split for the big model - layer split (`-ts 40,8`), and running the MTP draft model on the R9700 (`-devd`). They win a few percent at short context but lose 10%+ at long context, because the per-token attention path then crosses the OCuLink x4 link every step.
+
+**GLM-5.3-Flash (320B-A18B MoE, unsloth UD-IQ3_XXS, 113GB) across both GPUs.** This is the one model where the eGPU actually pays off the way I originally hoped: 3-bit needs ~120GB, so it only fits with the R9700's 32GB added to the Strix Halo's pool - 4-bit (200GB) doesn't fit unfortunately.
+
+| context depth | decode t/s | prefill t/s |
+|---|---|---|
+| empty | 14.0 | 121 |
+| 4k | 11.7 | 104 |
+| 16k | 10.1 | 79 |
+
+Not really fast enough - so for now I am not trying to run that one and stick with Qwen 3.8 Flash/27B combo.
