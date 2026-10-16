@@ -4,7 +4,9 @@ icon: fas fa-info-circle
 order: 7
 ---
 
-I’ve spent the last 15 years working in offensive security, with a strong focus on Windows research and exploitation, red teaming, and developing training labs. I also delivered live training sessions to help others build their skills. Currently, I split my time between working as a red teamer at Mantodea Security and creating lab environments at Vulnlab.
+I’ve spent the last 20 years working in offensive security, with a strong focus on Windows research and exploitation, red teaming, and developing training labs. I also deliver live training sessions to help others build their skills. Currently I’m Director of Offensive Content Engineering at Hack The Box. Previously I worked as a red teamer at Mantodea Security and built lab environments at Vulnlab.
+
+You can usually find me at conferences in Asia such as Zer0Con, POC, TyphoonCon and CODE BLUE, or in Europe at x33fcon and OffensiveCon.
 
 Outside of security, I love exploring Japanese language and culture.
 
@@ -12,6 +14,7 @@ Outside of security, I love exploring Japanese language and culture.
 
 - Offensive Security Exploitation Expert (OSEE)
 - Offensive Security Exploit Developer (OSED)
+- HTB Certified Active Directory Pentesting Expert (CAPE)
 - Certified Red Team Lead (CRTL)
 - Certified Red Team Operator (CRTO)
 - Offensive Security Experienced Penetration Tester (OSEP)
@@ -21,6 +24,8 @@ Outside of security, I love exploring Japanese language and culture.
 - Certified Information Systems Security Professional (CISSP)
 
 ## Trainings
+- 2026 - macOS Vulnerability Research @ Zer0Con by Gergely Kalman
+- 2025 - AI Agent Security Masterclass @ CODE BLUE Japan by Abhay Bhargav
 - 2024 - Modern Initial Access and Evasion Tactics @ mgeeky
 - 2023 - Linux Kernel Exploitation @ OffensiveCon by Andrey Konovalov
 - 2023 - Azure AD Security @ RomHack by Dirk-jan Mollema

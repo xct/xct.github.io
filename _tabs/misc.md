@@ -6,6 +6,7 @@ order: 4
 
 ## Labs
 
+- <https://hackthebox.com>
 - <https://vulnlab.com>
 
 ## Useful
