@@ -1,5 +1,5 @@
 ---
-title: "Local AI with Strix Halo & R9700"
+title: "Local AI with Strix Halo & R9700, Part 1: Building the Rig"
 categories:
 - AI
 image:
