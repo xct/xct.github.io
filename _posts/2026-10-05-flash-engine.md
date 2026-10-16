@@ -16,7 +16,7 @@ tags:
 - moe
 ---
 
-In the [last post](/posts/local-ai-rig/) I built a Strix Halo + R9700 box and early results were a bit disappointing - splitting one model across both GPUs didn't really pay off as I hoped. Qwen3.8-Flash-Next (125B-A6B MoE) ran at about 30 t/s on the Strix Halo iGPU alone, and every split lost at long context because the attention path crossed the OCuLink x4 link every token.
+In the [last post](/local-ai-rig/) I built a Strix Halo + R9700 box and early results were a bit disappointing - splitting one model across both GPUs didn't really pay off as I hoped. Qwen3.8-Flash-Next (125B-A6B MoE) ran at about 30 t/s on the Strix Halo iGPU alone, and every split lost at long context because the attention path crossed the OCuLink x4 link every token.
 
 I wanted to get better performance (ultimately for vulnerability research), so I (who are we kidding - mostly Claude) wrote a dedicated engine for exactly this hardware. It's called **strixpro**, and it now runs Qwen3.8-Flash-Next at **~100 t/s** on short prompts and **over 70 t/s at a 1M-token context**, with both the GPU and the Strix Halo power-capped so the box stays quiet. Don't underestimate the noise these tiny PCs can make - capping both the GPU and CPU/iGPU is really the only way to make this bearable imo.
 
